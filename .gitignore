@@ -1,0 +1,37 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+*.pidb
+*.suo
+*.userprefs
+*.sln
+*.csproj
+*.unityproj
+.DS_Store
+*.meta
+
+# Slicer scene files (large — store separately)
+*.mrb
+*.nrrd
+*.nii
+*.nii.gz
+
+# Patient data (never commit)
+*.dcm
+DICOM/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
