@@ -563,12 +563,12 @@ Anyone who downloads the `.mrb` file can open it in Slicer with a single click a
 
 In 3D Slicer on any machine:
 ```
-File → Load Scene → 01_Slicer_FiducialScrews/data/SlicerScene_Final.mrb
+File → Load Scene → 01_Slicer_FiducialScrews/data/02_MRBrainTumor1_MRI_Screws_FiducialMarkers.mrb
 ```
 
 Everything loads instantly — MRI with screws, skull model, fiducial list and window/level settings.
 
-> **Note:** The portable scene bundle for this module is available at `01_Slicer_FiducialScrews/data/SlicerScene_Original_to_Screw.mrb` in this repository. Download it to skip all previous steps and start directly from the completed scene.
+> **Note:** The portable scene bundle for this module is available at `01_Slicer_FiducialScrews/data/02_MRBrainTumor1_MRI_Screws_FiducialMarkers.mrb` in this repository. It contains the original MRI, the MRI with screws burned in, and the `FiducialMarks_List` with all 9 ground truth coordinates. Download it to skip all previous steps and start directly from the completed scene.
 
 ---
 

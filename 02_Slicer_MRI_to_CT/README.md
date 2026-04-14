@@ -197,6 +197,33 @@ The output CT has dimensions 256×256×256 regardless of the input MRI dimension
 
 ---
 
+## Portable Scene Bundle
+
+A complete Slicer scene bundle for this module is available in the repository:
+
+**`02_Slicer_MRI_to_CT/data/03_BRBrainTumor1_MRI_CT_Screws.mrb`**
+
+### Contents
+
+| Node | Type | Description |
+|---|---|---|
+| `MRBrainTumor1` | Volume | Original T1w MRI |
+| `MRBrainTumor1_1` | Volume | MRI with 9 simulated bone-anchored screws |
+| `BrainTumor1_Screws_CTFu` | Volume | Synthetic CT generated from MRI with screws (Fu Model) |
+| `FiducialMarks_List` | Markups | 9 ground truth screw centroid coordinates |
+| `MaskedInputVolume` | Volume | Preprocessing intermediate |
+| `PreprocessedInputVolume` | Volume | Preprocessing intermediate |
+
+### How to open
+
+```
+File → Load Scene → 02_Slicer_MRI_to_CT/data/03_BRBrainTumor1_MRI_CT_Screws.mrb
+```
+
+This bundle is the starting point for **[03 — Segmentation](../03_Slicer_Segmentation/README.md)**.
+
+---
+
 ## Citation
 
 > C.B. Raggio et al., *FedSynthCT-Brain: A federated learning framework for multi-institutional brain MRI-to-CT synthesis*, Computers in Biology and Medicine, Volume 192, Part A, 2025, 110160.
