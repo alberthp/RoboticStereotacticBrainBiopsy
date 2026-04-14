@@ -201,7 +201,7 @@ The output CT has dimensions 256×256×256 regardless of the input MRI dimension
 
 A complete Slicer scene bundle for this module is available in the repository:
 
-**`02_Slicer_MRI_to_CT/data/03_BRBrainTumor1_MRI_CT_Screws.mrb`**
+**`02_Slicer_MRI_to_CT/data/03_MBRBrainTumor1_MRI_CT_Screws.mrb`**
 
 ### Contents
 
@@ -217,7 +217,7 @@ A complete Slicer scene bundle for this module is available in the repository:
 ### How to open
 
 ```
-File → Load Scene → 02_Slicer_MRI_to_CT/data/03_BRBrainTumor1_MRI_CT_Screws.mrb
+File → Load Scene → 02_Slicer_MRI_to_CT/data/03_MBRBrainTumor1_MRI_CT_Screws.mrb
 ```
 
 This bundle is the starting point for **[03 — Segmentation](../03_Slicer_Segmentation/README.md)**.
