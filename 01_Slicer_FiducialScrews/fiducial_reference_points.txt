@@ -1,0 +1,61 @@
+# ============================================================
+# Fiducial Reference Points — MRBrainTumor1
+# ============================================================
+# 3x3 grid on parietal/frontal skull surface
+# Coordinate system: RAS (Right-Anterior-Superior), mm
+# Volume: MRBrainTumor1 (T1w MRI, 256x256x112, spacing 0.938x0.938x1.4mm)
+# S range covered by MRI: -77.7 to +79.1 mm
+#
+# Grid layout (viewed from above):
+#
+#   F_1-3  F_1-2  F_1-1      <- Row 1 (most lateral/anterior, lowest S)
+#   F_2-3  F_2-2  F_2-1      <- Row 2 (middle)
+#   F_3-3  F_3-2  F_3-1      <- Row 3 (most medial/posterior, highest S)
+#
+#                R (Right+)
+#                ^
+#                |
+#   F_1-3 ---F_1-2--- F_1-1
+#     |         |         |
+#   F_2-3 ---F_2-2--- F_2-1  --> A (Anterior+)
+#     |         |         |
+#   F_3-3 ---F_3-2--- F_3-1
+#
+# Spacing: ~20mm in R axis, ~14mm in A axis
+# ============================================================
+#
+# Format: label, R, A, S (mm)
+#
+F_1-1, -17.344, 58.255, 50.503
+F_1-2,   3.281, 58.255, 54.755
+F_1-3,  22.969, 58.255, 50.830
+F_2-1, -17.344, 43.736, 59.998
+F_2-2,   3.281, 43.736, 62.720
+F_2-3,  22.969, 43.736, 59.370
+F_3-1, -17.344, 29.794, 64.897
+F_3-2,   3.281, 29.794, 68.495
+F_3-3,  22.969, 29.794, 65.232
+#
+# ============================================================
+# To load these points into Slicer, run in Python Interactor:
+# (View -> Python Interactor)
+# ============================================================
+#
+# import numpy as np
+# POINTS = [
+#     ("F_1-1", [-17.344, 58.255, 50.503]),
+#     ("F_1-2", [  3.281, 58.255, 54.755]),
+#     ("F_1-3", [ 22.969, 58.255, 50.830]),
+#     ("F_2-1", [-17.344, 43.736, 59.998]),
+#     ("F_2-2", [  3.281, 43.736, 62.720]),
+#     ("F_2-3", [ 22.969, 43.736, 59.370]),
+#     ("F_3-1", [-17.344, 29.794, 64.897]),
+#     ("F_3-2", [  3.281, 29.794, 68.495]),
+#     ("F_3-3", [ 22.969, 29.794, 65.232]),
+# ]
+# node = slicer.mrmlScene.AddNewNodeByClass(
+#     "vtkMRMLMarkupsFiducialNode", "FiducialMarks_List")
+# for label, pos in POINTS:
+#     idx = node.AddControlPoint(pos)
+#     node.SetNthControlPointLabel(idx, label)
+# print(f"Loaded {node.GetNumberOfControlPoints()} points.")

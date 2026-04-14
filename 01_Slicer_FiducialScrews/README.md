@@ -27,6 +27,71 @@ Teacher: Compare student points vs ground truth → measure FLE
 
 ---
 
+## Fiducial Reference Point Coordinates
+
+The 9 screw positions are defined as a **3×3 grid on the parietal skull surface** of MRBrainTumor1, within the MRI coverage (S = 50–68 mm).
+
+### Grid layout
+
+```
+         R- (Left)       R=0        R+ (Right)
+              |             |             |
+A+ (Post) -- F_3-1 ------ F_3-2 ------ F_3-3   S ≈ 65–68mm
+              |             |             |
+              F_2-1 ------ F_2-2 ------ F_2-3   S ≈ 59–63mm
+              |             |             |
+A- (Ant)  -- F_1-1 ------ F_1-2 ------ F_1-3   S ≈ 50–55mm
+```
+
+### Coordinates (RAS, mm)
+
+| Label | R (mm) | A (mm) | S (mm) | Position |
+|---|---|---|---|---|
+| F_1-1 | -17.344 | 58.255 | 50.503 | Left-Anterior |
+| F_1-2 |   3.281 | 58.255 | 54.755 | Center-Anterior |
+| F_1-3 |  22.969 | 58.255 | 50.830 | Right-Anterior |
+| F_2-1 | -17.344 | 43.736 | 59.998 | Left-Middle |
+| F_2-2 |   3.281 | 43.736 | 62.720 | Center (grid center) |
+| F_2-3 |  22.969 | 43.736 | 59.370 | Right-Middle |
+| F_3-1 | -17.344 | 29.794 | 64.897 | Left-Posterior |
+| F_3-2 |   3.281 | 29.794 | 68.495 | Center-Posterior |
+| F_3-3 |  22.969 | 29.794 | 65.232 | Right-Posterior |
+
+> Spacing: ~20mm along R axis, ~14mm along A axis.
+> The S coordinate varies naturally with skull curvature.
+
+### Files
+
+The full coordinates with copy-paste Python loader are in:
+**[fiducial_reference_points.txt](fiducial_reference_points.txt)**
+
+### Load into Slicer automatically (copy-paste into Python Interactor)
+
+```python
+import numpy as np
+
+POINTS = [
+    ("F_1-1", [-17.344, 58.255, 50.503]),
+    ("F_1-2", [  3.281, 58.255, 54.755]),
+    ("F_1-3", [ 22.969, 58.255, 50.830]),
+    ("F_2-1", [-17.344, 43.736, 59.998]),
+    ("F_2-2", [  3.281, 43.736, 62.720]),
+    ("F_2-3", [ 22.969, 43.736, 59.370]),
+    ("F_3-1", [-17.344, 29.794, 64.897]),
+    ("F_3-2", [  3.281, 29.794, 68.495]),
+    ("F_3-3", [ 22.969, 29.794, 65.232]),
+]
+
+node = slicer.mrmlScene.AddNewNodeByClass(
+    "vtkMRMLMarkupsFiducialNode", "FiducialMarks_List")
+for label, pos in POINTS:
+    idx = node.AddControlPoint(pos)
+    node.SetNthControlPointLabel(idx, label)
+print(f"Loaded {node.GetNumberOfControlPoints()} points.")
+```
+
+---
+
 ## Requirements
 
 - **3D Slicer** ≥ 5.8 ([download](https://download.slicer.org/))
