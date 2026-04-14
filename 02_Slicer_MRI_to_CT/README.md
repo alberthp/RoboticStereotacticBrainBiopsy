@@ -102,7 +102,7 @@ Expected output: CT range approximately `-1024` to `1600` HU. Bone should appear
 |---|---|---|
 | `MRBrainTumor1_CT_FuModel` | Scalar Volume | Synthetic CT [256×256×256] in Hounsfield Units |
 
-This volume is used as input for **[02 — Segmentation](../02_Slicer_Segmentation/README.md)**.
+This volume is used as input for **[02 — Segmentation](../03_Slicer_Segmentation/README.md)**.
 
 ---
 

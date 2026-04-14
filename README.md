@@ -20,12 +20,13 @@ The pipeline is designed for **bioengineering and medical robotics students** an
 
 In stereotactic brain biopsy:
 
-1. **Pre-operative**: Bone-anchored fiducial markers are implanted in the patient's skull. MRI and/or CT scans are acquired with the markers in place.
-2. **Planning**: A neurosurgeon identifies the target (e.g. brain tumour centroid) and plans the optimal insertion trajectory.
-3. **Registration**: In the operating room, a tracked probe touches each fiducial marker. The resulting point cloud is aligned with the pre-operative imaging to establish a common coordinate system.
-4. **Execution**: A robotic arm (e.g. Franka Emika) guides a biopsy needle along the planned trajectory with sub-millimetre accuracy.
+1. **Pre-operative — Fiducial implantation**: Bone-anchored fiducial screws are implanted in the patient's skull. MRI is acquired **with the screws already in place**.
+2. **Pre-operative — Image processing**: The MRI (containing visible screw signals) is converted to synthetic CT. Anatomical structures (skull, brain, tumour) are segmented and reconstructed in 3D.
+3. **Planning**: A neurosurgeon identifies the tumour centroid and plans the optimal biopsy insertion trajectory.
+4. **Registration**: In the operating room, a tracked probe touches each fiducial screw. The resulting physical point cloud is aligned with the pre-operative imaging to establish a common coordinate system.
+5. **Execution**: A robotic arm guides the biopsy needle along the planned trajectory with sub-millimetre accuracy.
 
-This repository simulates each of these phases digitally.
+This repository simulates each of these phases digitally, following the same order.
 
 ---
 
@@ -33,35 +34,36 @@ This repository simulates each of these phases digitally.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        PRE-OPERATIVE                            │
+│                     PRE-OPERATIVE                               │
 │                                                                 │
 │  MRBrainTumor1 (T1w MRI)                                       │
 │       │                                                         │
-│       ├─► 01_MRI_to_CT ──► Synthetic CT (FedSynthCT)           │
+│       ├─► 01_FiducialScrews ──► MRI with 9 simulated screws    │
+│       │                         Ground truth coordinates        │
 │       │                                                         │
-│       ├─► 02_Segmentation ──► Skull mesh (OBJ/STL)             │
-│       │                       Brain segmentation               │
-│       │                       Tumour segmentation              │
+│       ├─► 02_MRI_to_CT ──────► Synthetic CT (FedSynthCT)       │
+│       │         (uses MRI_WithScrews as input)                  │
 │       │                                                         │
-│       └─► 03_FiducialScrews ──► MRI with simulated screws      │
-│                                 Ground truth coordinates        │
+│       └─► 03_Segmentation ──► Skull mesh (OBJ/STL)             │
+│                                Brain segmentation               │
+│                                Tumour segmentation              │
 └─────────────────────────────────────────────────────────────────┘
                               │
                     04_OpenIGT_Communication
                     (Slicer ↔ Unity bridge)
                               │
 ┌─────────────────────────────────────────────────────────────────┐
-│                        INTRA-OPERATIVE                          │
+│                     INTRA-OPERATIVE                             │
 │                                                                 │
 │  05_Unity_Core_Simulator                                        │
 │       │                                                         │
 │       ├─► Load skull mesh + brain + tumour                     │
-│       ├─► Student places probe on fiducials → point cloud      │
+│       ├─► Student places probe on screws → physical point cloud │
 │       ├─► SVD Registration (virtual ↔ physical)                │
-│       ├─► Plan insertion trajectory                             │
+│       ├─► Plan insertion trajectory to tumour                  │
 │       └─► Robotic arm guidance simulation                       │
 │                                                                 │
-│  06_Unity_Haptic_Touch ──► Force feedback on probe contact     │
+│  06_Unity_Haptic_Touch ──► Force feedback on screw contact     │
 │                                                                 │
 │  07_Unity_AR ──► AR overlay on patient phantom                 │
 └─────────────────────────────────────────────────────────────────┘
@@ -78,15 +80,15 @@ RoboticStereotacticBrainBiopsy/
 ├── SETUP.md                         ← Installation guide for all software
 ├── LICENSE
 │
-├── 01_Slicer_MRI_to_CT/            ← MRI → Synthetic CT conversion
+├── 01_Slicer_FiducialScrews/       ← Simulated bone-anchored screws in MRI
 │   ├── README.md
 │   └── scripts/
 │
-├── 02_Slicer_Segmentation/         ← Skull, brain, tumour segmentation
+├── 02_Slicer_MRI_to_CT/            ← MRI → Synthetic CT conversion
 │   ├── README.md
 │   └── scripts/
 │
-├── 03_Slicer_FiducialScrews/       ← Simulated bone-anchored screws
+├── 03_Slicer_Segmentation/         ← Skull, brain, tumour segmentation
 │   ├── README.md
 │   └── scripts/
 │
@@ -111,16 +113,28 @@ RoboticStereotacticBrainBiopsy/
 
 ## Modules
 
-### [01 — MRI to CT Conversion](01_Slicer_MRI_to_CT/README.md)
-Converts T1-weighted MRI brain scans to synthetic CT using the **FedSynthCT-Brain** federated learning model integrated in the SlicerModalityConverter extension. Synthetic CT provides Hounsfield Unit values needed for bone segmentation and radiotherapy dose planning.
+### [01 — Fiducial Screw Simulation](01_Slicer_FiducialScrews/README.md)
+**Starting point of the pipeline.** Simulates bone-anchored fiducial screws by burning bright cylindrical signals directly into the MRI voxel array, replicating the appearance of CuSO₄-filled plastic screws implanted before scanning. Produces a realistic pre-operative MRI dataset where students must identify and localise 9 screws distributed in a 3×3 grid on the parietal skull surface.
 
-**Key tools:** 3D Slicer, SlicerModalityConverter, FedSynthCT Fu/Li models
+**Key output:** `MRI_WithScrews.nrrd` (student dataset) + `ScrewFiducials_GroundTruth.fcsv` (teacher answer key)
+
+**Key tools:** 3D Slicer Python Interactor, NumPy, VTK
 
 ---
 
-### [02 — Segmentation and 3D Reconstruction](02_Slicer_Segmentation/README.md)
+### [02 — MRI to Synthetic CT Conversion](02_Slicer_MRI_to_CT/README.md)
+Converts the MRI (now containing screw signals) to synthetic CT using the **FedSynthCT-Brain** Fu Model — the best-performing of the three available architectures. Synthetic CT provides Hounsfield Unit values needed for bone segmentation and dose planning.
+
+**Key input:** `MRI_WithScrews.nrrd`
+**Key output:** `MRBrainTumor1_CT_FuModel`
+
+**Key tools:** 3D Slicer, SlicerModalityConverter (Image Synthesis → ModalityConverter)
+
+---
+
+### [03 — Segmentation and 3D Reconstruction](03_Slicer_Segmentation/README.md)
 Segments anatomical structures from the synthetic CT and MRI:
-- **Skull** — threshold-based segmentation with manual cleanup
+- **Skull** — threshold-based segmentation with manual cleanup of inferior structures
 - **Brain** — HDBrain extension (deep learning)
 - **Tumour** — semi-automatic segmentation with statistics
 
@@ -130,31 +144,18 @@ Exports 3D surface meshes (OBJ/STL) for Unity import.
 
 ---
 
-### [03 — Fiducial Screw Simulation](03_Slicer_FiducialScrews/README.md)
-Simulates bone-anchored fiducial screws by burning bright cylindrical signals directly into the MRI voxel array. Produces a realistic pre-operative MRI dataset where students must identify and localise 9 screws distributed in a 3×3 grid on the parietal skull surface.
-
-**Key output:** `MRI_WithScrews.nrrd` (student dataset) + `ScrewFiducials_GroundTruth.fcsv` (teacher answer key)
-
-**Key tools:** 3D Slicer Python Interactor, NumPy, VTK
-
----
-
 ### [04 — OpenIGTLink Communication](04_OpenIGT_Communication/README.md)
-Establishes real-time bidirectional communication between 3D Slicer and Unity using the **OpenIGTLink** protocol. Enables live streaming of:
-- Transform matrices (tracked probe position)
-- Point clouds (fiducial coordinates)
-- Volume data (MRI/CT slices)
-- String messages (state synchronisation)
+Establishes real-time bidirectional communication between 3D Slicer and Unity using the **OpenIGTLink** protocol. Enables live streaming of transform matrices, point clouds, volume slices, and state messages.
 
 **Key tools:** SlicerOpenIGTLink extension, OpenIGTLink Unity plugin
 
 ---
 
 ### [05 — Unity Core Simulator](05_Unity_Core_Simulator/README.md)
-The main surgical simulation in Unity:
+The main surgical simulation:
 - Import and display skull mesh, brain volume, tumour model
-- Interactive probe placement on fiducial markers
-- **SVD-based rigid registration** (virtual point cloud → physical point cloud)
+- Interactive probe placement on fiducial screws
+- **SVD-based rigid registration** (virtual → physical coordinate systems)
 - Insertion trajectory planning and visualisation
 - Robotic arm (Franka Emika) simulation
 
@@ -163,14 +164,14 @@ The main surgical simulation in Unity:
 ---
 
 ### [06 — Haptic Touch Device](06_Unity_Haptic_Touch/README.md)
-Integrates a **Touch haptic device** (3D Systems) with the Unity simulator to provide force feedback when the virtual probe contacts the skull surface or fiducial markers. Simulates the tactile sensation of the registration procedure.
+Integrates a **Touch haptic device** (3D Systems) with the Unity simulator to provide force feedback when the virtual probe contacts the skull surface or fiducial screws.
 
 **Key tools:** Unity, OpenHaptics SDK, Touch device driver
 
 ---
 
 ### [07 — Augmented Reality](07_Unity_AR/README.md)
-Projects the surgical plan (tumour location, insertion trajectory, fiducial grid) as an AR overlay onto a physical skull phantom using AR glasses (e.g. Microsoft HoloLens 2 or Meta Quest 3). Bridges virtual planning and physical execution.
+Projects the surgical plan (tumour location, insertion trajectory, fiducial grid) as an AR overlay onto a physical skull phantom.
 
 **Key tools:** Unity, MRTK (Mixed Reality Toolkit), AR Foundation
 
@@ -191,21 +192,20 @@ Projects the surgical plan (tumour location, insertion trajectory, fiducial grid
 ### Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/RoboticStereotacticBrainBiopsy.git
+git clone https://github.com/alberthp/RoboticStereotacticBrainBiopsy.git
 cd RoboticStereotacticBrainBiopsy
 ```
 
-Then follow the modules in order:
+Follow modules **in order**:
 
-1. Start with **[SETUP.md](SETUP.md)** to install all required software
-2. Follow **[01_Slicer_MRI_to_CT](01_Slicer_MRI_to_CT/README.md)** to generate the synthetic CT
-3. Follow **[02_Slicer_Segmentation](02_Slicer_Segmentation/README.md)** to segment anatomical structures
-4. Follow **[03_Slicer_FiducialScrews](03_Slicer_FiducialScrews/README.md)** to generate the simulated screw dataset
-5. Follow **[04_OpenIGT_Communication](04_OpenIGT_Communication/README.md)** to set up the Slicer–Unity bridge
-6. Follow **[05_Unity_Core_Simulator](05_Unity_Core_Simulator/README.md)** to run the surgical simulation
-
-Modules 06 and 07 are optional extensions requiring additional hardware.
+1. **[SETUP.md](SETUP.md)** — install all required software
+2. **[01 — Fiducial Screws](01_Slicer_FiducialScrews/README.md)** — generate MRI with simulated screws
+3. **[02 — MRI to CT](02_Slicer_MRI_to_CT/README.md)** — convert MRI to synthetic CT
+4. **[03 — Segmentation](03_Slicer_Segmentation/README.md)** — segment skull, brain, tumour
+5. **[04 — OpenIGT](04_OpenIGT_Communication/README.md)** — set up Slicer–Unity bridge
+6. **[05 — Unity Simulator](05_Unity_Core_Simulator/README.md)** — run the surgical simulation
+7. **[06 — Haptics](06_Unity_Haptic_Touch/README.md)** *(optional)* — haptic feedback
+8. **[07 — AR](07_Unity_AR/README.md)** *(optional)* — augmented reality overlay
 
 ---
 
@@ -230,9 +230,9 @@ All modules use the **MRBrainTumor1** sample dataset available directly in 3D Sl
 
 After completing the full pipeline, students will be able to:
 
-- Explain why CT is preferred over MRI for rigid tissue imaging and how synthetic CT addresses this
+- Explain the role of bone-anchored fiducial markers in stereotactic surgery
+- Understand why CT is preferred over MRI for rigid tissue imaging and how synthetic CT addresses this
 - Perform threshold-based and deep-learning skull/brain segmentation in 3D Slicer
-- Understand the role of bone-anchored fiducial markers in surgical registration
 - Implement SVD-based point-to-point rigid registration in Unity/C#
 - Measure and interpret Fiducial Localisation Error (FLE) and Target Registration Error (TRE)
 - Describe the OpenIGTLink protocol and its role in surgical navigation systems
@@ -244,31 +244,28 @@ After completing the full pipeline, students will be able to:
 
 Contributions are welcome. Please open an issue first to discuss proposed changes.
 
-For new module contributions, follow the existing README structure and include:
-- Purpose and clinical context
-- Step-by-step instructions with code
-- Expected outputs with example values
-- Screenshots (where applicable)
-
 ---
 
 ## Citation
 
-If you use this repository in academic work, please cite:
+If you use this repository in academic work:
 
-> [Author], *Robotic Stereotactic Brain Biopsy — An Open-Source Educational Simulation Pipeline*, GitHub, 2025. https://github.com/YOUR_USERNAME/RoboticStereotacticBrainBiopsy
+> A. Hernansanz, *Robotic Stereotactic Brain Biopsy — An Open-Source Educational Simulation Pipeline*, GitHub, 2025.
+> https://github.com/alberthp/RoboticStereotacticBrainBiopsy
 
 For the MRI-to-CT conversion component:
 
-> C.B. Raggio et al., *FedSynthCT-Brain: A federated learning framework for multi-institutional brain MRI-to-CT synthesis*, Computers in Biology and Medicine, Vol. 192, 2025. https://doi.org/10.1016/j.compbiomed.2025.110160
+> C.B. Raggio et al., *FedSynthCT-Brain*, Computers in Biology and Medicine, Vol. 192, 2025.
+> https://doi.org/10.1016/j.compbiomed.2025.110160
 
 ---
 
 ## License
 
-This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
-The FedSynthCT models are licensed for **research purposes only**. See [SlicerModalityConverter MODEL_LICENSE](https://github.com/ciroraggio/SlicerModalityConverter/blob/main/MODEL_LICENSE) for details.
+The FedSynthCT models are licensed for **research purposes only**.
+See [SlicerModalityConverter MODEL_LICENSE](https://github.com/ciroraggio/SlicerModalityConverter/blob/main/MODEL_LICENSE).
 
 ---
 
