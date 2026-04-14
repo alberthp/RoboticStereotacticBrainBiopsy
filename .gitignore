@@ -13,11 +13,13 @@
 .DS_Store
 *.meta
 
-# Slicer scene files (large — store separately)
-*.mrb
+# Slicer large data files (store separately or via releases)
 *.nrrd
 *.nii
 *.nii.gz
+
+# Allow .mrb scene bundles explicitly committed to data/ folders
+!**/data/*.mrb
 
 # Patient data (never commit)
 *.dcm

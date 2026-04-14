@@ -568,7 +568,7 @@ File → Load Scene → 01_Slicer_FiducialScrews/data/SlicerScene_Final.mrb
 
 Everything loads instantly — MRI with screws, skull model, fiducial list and window/level settings.
 
-> **Note:** The `.mrb` file for this project is available in the `01_Slicer_FiducialScrews/data/` folder of this repository. Download it to skip all previous steps and start directly from the completed scene.
+> **Note:** The portable scene bundle for this module is available at `01_Slicer_FiducialScrews/data/SlicerScene_Original_to_Screw.mrb` in this repository. Download it to skip all previous steps and start directly from the completed scene.
 
 ---
 
