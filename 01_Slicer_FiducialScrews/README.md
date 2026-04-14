@@ -106,7 +106,11 @@ print(f"Loaded {node.GetNumberOfControlPoints()} points.")
 1. Open 3D Slicer
 2. Go to **File → Download Sample Data**
 3. Click **MRBrainTumor1** to download and load the T1-weighted MRI
-4. Verify the volume appears in the slice views
+4. Verify the volume appears in the slice views as shown below
+
+![MRBrainTumor1 original](screenshots/01_MRBrainTumor1_original.png)
+
+The axial view (top-left) shows the brain with the tumour visible as a bright region. The coronal (bottom-left) and sagittal (bottom-right) views confirm the tumour location. The 3D volume rendering (top-right) shows the full head.
 
 > **Note:** MRBrainTumor1 is a T1w MRI with dimensions 256×256×112 and spacing 0.938×0.938×1.4 mm. It covers S = -77.7 to +79.1 mm in RAS space.
 
@@ -354,6 +358,19 @@ print(f"K slices with screws: {slices.min()} to {slices.max()}")
 print(f"Max value: {mriArray.max():.1f}")
 ```
 
+### Expected result
+
+![MRI with screws burned in](screenshots/02_MRI_WithScrews.png)
+
+The bright white signals on the skull surface are the simulated screws. Verify in all four views:
+
+- **Axial (top-left)** — bright cross-sections on the skull ring
+- **3D rendering (top-right)** — 9 bright studs protruding from the parietal surface
+- **Coronal (bottom-left)** — screw shafts going through the bone with protrusion above
+- **Sagittal (bottom-right)** — shaft depth and insertion angle visible
+
+The tumour remains visible in coronal and sagittal views — the screws do not affect any other part of the volume. Note both `MRBrainTumor1` (original) and `MRI_WithScrews` appear in the Data panel.
+
 ---
 
 ## Step 6 — Update Markup List to Screw Centroids
@@ -371,6 +388,17 @@ for i, (label, centroid) in enumerate(screwCentroids):
 
 print("Fiducial list updated to screw centroids.")
 ```
+
+### Expected result
+
+![Fiducial marks and screws](screenshots/03_FiducialMarks_and_Screws.png)
+
+The Markups panel (left) shows all 9 points in the `FiducialMarks_List` with their R, A, S coordinates. The pink/red spheres in the slice views and 3D rendering are the Markup centroids, overlaid exactly on the bright white screw signals. This confirms the fiducial coordinates are correctly aligned with the burned voxel cylinders:
+
+- **Axial (top-center)** — pink markers sit at the center of each bright screw cross-section
+- **3D rendering (top-right)** — all 9 markers labelled F_1-1 through F_3-3 visible on parietal surface
+- **Coronal (bottom-center)** — markers at mid-shaft of each screw
+- **Sagittal (bottom-right)** — shaft depth confirmed by marker alignment
 
 ---
 
