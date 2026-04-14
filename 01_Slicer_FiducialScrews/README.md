@@ -535,7 +535,42 @@ Screws are burned into the **MRI** because that is the clinically realistic scen
 
 ---
 
-## Citation
+## Step 8 — Save a Portable Scene Bundle
+
+Once all steps are complete, save the full scene as a **Medical Reality Bundle (.mrb)** — a single self-contained file that packages the MRI volume, fiducial list, skull model and all display settings together. This is how the project demo included in this repository was created.
+
+Anyone who downloads the `.mrb` file can open it in Slicer with a single click and immediately see the complete scene exactly as it was saved.
+
+### How to save
+
+1. Go to **File → Save Data**
+
+2. The dialog lists all individual files in the scene (NRRD volumes, markups JSON, volume properties):
+
+   ![Save Scene dialog — MRML format](screenshots/04_SaveScene_MRML.png)
+
+3. Click the **File Format dropdown** of the first row (`SlicerScene_Final.mrml`) and change it from `MRML Scene (.mrml)` to **`Medical Reality Bundle (.mrb)`**
+
+4. All individual files collapse into a single row — the bundle packages everything automatically:
+
+   ![Save Scene dialog — MRB format](screenshots/05_SaveScene_MRB.png)
+
+5. Click the **directory button (...)** to set the save location — navigate to your repo folder `01_Slicer_FiducialScrews/data/`
+
+6. Click **Save**
+
+### How to open
+
+In 3D Slicer on any machine:
+```
+File → Load Scene → 01_Slicer_FiducialScrews/data/SlicerScene_Final.mrb
+```
+
+Everything loads instantly — MRI with screws, skull model, fiducial list and window/level settings.
+
+> **Note:** The `.mrb` file for this project is available in the `01_Slicer_FiducialScrews/data/` folder of this repository. Download it to skip all previous steps and start directly from the completed scene.
+
+---
 
 If using the ModalityConverter (FedSynthCT) model in this workflow:
 
