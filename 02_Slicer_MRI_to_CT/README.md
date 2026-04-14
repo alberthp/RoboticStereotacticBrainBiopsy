@@ -92,7 +92,45 @@ displayNode.SetLevel(400)
 print(f"CT range: {ctNode.GetImageData().GetScalarRange()}")
 ```
 
+## Step 6 — Verify the Output
+
+Switch to the CT volume and set a bone window to confirm the skull is clearly visible:
+
+```python
+# Run in Python Interactor (View → Python Interactor)
+ctNode = slicer.util.getNode("MRBrainTumor1_CT_FuModel")
+slicer.util.setSliceViewerLayers(background=ctNode, fit=True)
+displayNode = ctNode.GetVolumeDisplayNode()
+displayNode.SetWindow(1500)
+displayNode.SetLevel(400)
+print(f"CT range: {ctNode.GetImageData().GetScalarRange()}")
+```
+
 Expected output: CT range approximately `-1024` to `1600` HU. Bone should appear bright white in the axial view.
+
+### Expected result
+
+![Synthetic CT with screws — Fu Model](screenshots/01_CT_WithScrews_FuModel.png)
+
+The synthetic CT clearly shows:
+- **Axial (top-left)** — bright white skull ring with the 9 screw signals visible as high-intensity spots
+- **3D rendering (top-right)** — fiducial marker labels (F_1-1 through F_3-3) overlaid on the skull surface
+- **Coronal (bottom-left)** and **Sagittal (bottom-right)** — clean bone contrast with soft tissue visible
+
+The screws burned into the MRI in module 01 are preserved and visible in the synthetic CT — confirming the full pipeline is working correctly.
+
+### Bone window — high contrast view
+
+For clearer bone visualisation, narrow the window to emphasise the cortical ring:
+
+```python
+displayNode.SetWindow(400)
+displayNode.SetLevel(200)
+```
+
+![Synthetic CT — bone window](screenshots/02_CT_BoneWindow.png)
+
+With this window setting the skull cortex appears pure white and the soft tissue disappears, making it ideal for segmentation (module 03). The 3D rendering (top-right) shows the skull surface geometry clearly.
 
 ---
 
@@ -106,7 +144,38 @@ This volume is used as input for **[02 — Segmentation](../03_Slicer_Segmentati
 
 ---
 
-## Important Note on Volume Coverage
+## Known Issue — Vertical Misalignment in 3D Rendering
+
+When both `MRBrainTumor1` (original MRI) and `BrainTumor1_Screws_CTFu` (synthetic CT) are displayed simultaneously in the 3D view, a **vertical offset of ~100mm** is visible between the two volumes. The CT skull appears shifted upward relative to the MRI head rendering.
+
+**This is expected behaviour — not a bug.**
+
+| Property | MRI | Synthetic CT |
+|---|---|---|
+| S range | -77.7 to **+79.1 mm** | -77.7 to **+280.7 mm** |
+| Slices | 112 | 256 |
+| Volume center (S) | 0.7 mm | **101.5 mm** |
+| S coverage | 156.8 mm | **358.4 mm** |
+
+**Root cause:** The ModalityConverter preprocessing pads the input MRI to a fixed 256×256×256 volume before inference. The output CT therefore has **144 extra slices (201.6 mm) above the top of the original MRI**, shifting the 3D bounding box center upward by ~101mm.
+
+**Why 2D views are not affected:** Both volumes share the same origin (S = -77.7 mm) and spacing (1.4 mm/slice). In 2D slice views, the same S coordinate maps to the same anatomy in both volumes — the misalignment is invisible because you are comparing individual slices, not bounding boxes.
+
+**Impact on the pipeline:** None. Segmentation, fiducial placement, and registration all use slice coordinates (RAS positions) which are correctly aligned. The 3D rendering discrepancy is purely cosmetic.
+
+**To avoid confusion in the 3D view:** Display only one volume at a time, or use the Volume Rendering module to crop the CT rendering to the MRI's S range:
+
+```python
+# Crop CT rendering to match MRI S coverage
+ctNode = slicer.util.getNode("BrainTumor1_Screws_CTFu")
+vrLogic = slicer.modules.volumerendering.logic()
+vrNode  = vrLogic.GetFirstVolumeRenderingDisplayNode(ctNode)
+if vrNode:
+    roiNode = vrNode.GetROINode()
+    roiNode.SetXYZ(0, 0, 0.7)          # MRI center
+    roiNode.SetRadiusXYZ(120, 120, 78) # MRI half-extents
+    vrNode.SetCroppingEnabled(True)
+```
 
 The output CT has dimensions 256×256×256 regardless of the input MRI dimensions. For MRBrainTumor1 (112 slices), the CT covers a larger S range (up to +280mm) than the original MRI (up to +79mm). This is important when working with coordinates across both volumes — see module 03 for details.
 
