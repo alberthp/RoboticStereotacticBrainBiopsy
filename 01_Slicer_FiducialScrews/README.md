@@ -543,15 +543,3 @@ If using the ModalityConverter (FedSynthCT) model in this workflow:
 
 SlicerModalityConverter extension: https://github.com/ciroraggio/SlicerModalityConverter
 
----
-
-## Screenshots needed
-
-To complete this documentation with visual guidance, screenshots of the following steps would be helpful:
-
-- [ ] Step 1: MRBrainTumor1 loaded in 4-panel view
-- [ ] Step 2: ModalityConverter module UI with settings
-- [ ] Step 3: Segment Editor with skull segmented
-- [ ] Step 4: FiducialMarks_List with 9 points in 3D view
-- [ ] Step 5: Final result — 4-panel view showing screws in all planes
-- [ ] Step 5: 3D view showing screws protruding from skull surface
