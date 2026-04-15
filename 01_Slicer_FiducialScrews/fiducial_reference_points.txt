@@ -59,3 +59,25 @@ F_3-3,  22.969, 29.794, 65.232
 #     idx = node.AddControlPoint(pos)
 #     node.SetNthControlPointLabel(idx, label)
 # print(f"Loaded {node.GetNumberOfControlPoints()} points.")
+
+# ============================================================
+# TIP COORDINATES (FiducialTips_List)
+# PROTRUSION_MM = 4.0 mm above skull surface
+# Use these for Unity registration — probe touches screw tip
+# Colour in Slicer: YELLOW / GOLD
+# ============================================================
+#
+# Format: label, R, A, S (mm)
+#
+F_1-1_tip, -18.228, 61.228, 53.027
+F_1-2_tip,   3.117, 61.191, 57.467
+F_1-3_tip,  24.117, 61.167, 53.322
+F_2-1_tip, -18.264, 46.056, 63.126
+F_2-2_tip,   3.109, 46.048, 65.980
+F_2-3_tip,  24.169, 46.024, 62.422
+F_3-1_tip, -18.300, 31.434, 68.417
+F_3-2_tip,   3.105, 31.206, 72.151
+F_3-3_tip,  24.205, 31.394, 68.684
+#
+# To change protrusion height, modify PROTRUSION_MM in the
+# script above and regenerate — all tip coordinates update automatically.

@@ -402,7 +402,108 @@ The Markups panel (left) shows all 9 points in the `FiducialMarks_List` with the
 
 ---
 
-## Step 7 — Export Data
+## Step 6b — Generate Tip Fiducials (for Unity Registration)
+
+For surgical registration, the probe touches the **exposed tip** of each screw — the part protruding above the skull surface — not the centroid. This step creates a second Markup list `FiducialTips_List` with the tip position of each screw.
+
+### Geometry explanation
+
+```
+FiducialTips_List  ●  ← tip (PROTRUSION_MM above skull surface)
+                   |
+                   |  PROTRUSION_MM  (default: 4.0 mm)
+                   |
+Skull surface ─────┼──────────────────────────────────────
+                   |
+                   |  SCREW_LENGTH_MM - PROTRUSION_MM (8mm inside bone)
+                   |
+                   ○  bottom of screw shaft
+```
+
+The tip position is computed as:
+```
+tip = surface_point + outward_normal × PROTRUSION_MM
+```
+
+Where `outward_normal = -inward_normal` points away from the brain toward the outside.
+
+> **`PROTRUSION_MM` is the key variable** — increase it if the screw needs to protrude more above the skull for the probe to reach comfortably. Decrease it for a more embedded, realistic look. The default of 4.0mm balances visibility and realism.
+
+### Script
+
+```python
+import numpy as np
+
+# ── Configuration ────────────────────────────────────────────────────────────
+PROTRUSION_MM = 4.0   # ← change this to adjust tip height above skull surface
+
+# Surface positions and inward normals (from burn_screws.py output)
+screwData_MRI = [
+    ("F_1-1", np.array([-17.344, 58.255, 50.503]), np.array([ 0.221,-0.743,-0.631])),
+    ("F_1-2", np.array([  3.281, 58.255, 54.755]), np.array([-0.041,-0.734,-0.678])),
+    ("F_1-3", np.array([ 22.969, 58.255, 50.830]), np.array([-0.287,-0.728,-0.623])),
+    ("F_2-1", np.array([-17.344, 43.736, 59.998]), np.array([ 0.230,-0.580,-0.782])),
+    ("F_2-2", np.array([  3.281, 43.736, 62.720]), np.array([-0.043,-0.578,-0.815])),
+    ("F_2-3", np.array([ 22.969, 43.736, 59.370]), np.array([-0.300,-0.572,-0.763])),
+    ("F_3-1", np.array([-17.344, 29.794, 64.897]), np.array([ 0.239,-0.410,-0.880])),
+    ("F_3-2", np.array([  3.281, 29.794, 68.495]), np.array([-0.044,-0.403,-0.914])),
+    ("F_3-3", np.array([ 22.969, 29.794, 65.232]), np.array([-0.309,-0.400,-0.863])),
+]
+
+# ── Remove previous tips node if exists ─────────────────────────────────────
+try:
+    old = slicer.util.getNode("FiducialTips_List")
+    slicer.mrmlScene.RemoveNode(old)
+    print("Removed previous FiducialTips_List.")
+except: pass
+
+# ── Create tip markers ───────────────────────────────────────────────────────
+tipsNode = slicer.mrmlScene.AddNewNodeByClass(
+    "vtkMRMLMarkupsFiducialNode", "FiducialTips_List")
+tipsNode.GetDisplayNode().SetSelectedColor(1, 0.8, 0)   # gold/yellow colour
+tipsNode.GetDisplayNode().SetGlyphScale(2.0)
+
+print(f"Tip positions at PROTRUSION_MM = {PROTRUSION_MM}mm above skull surface:")
+print(f"{'Label':8} {'R':>8} {'A':>8} {'S':>8}")
+print("-" * 38)
+
+for label, pos, inward in screwData_MRI:
+    outward = -inward / np.linalg.norm(inward)
+    tip     = pos + outward * PROTRUSION_MM
+    idx     = tipsNode.AddControlPoint(tip.tolist())
+    tipsNode.SetNthControlPointLabel(idx, label)
+    print(f"{label:8} {tip[0]:8.3f} {tip[1]:8.3f} {tip[2]:8.3f}")
+
+print(f"\nCreated {tipsNode.GetNumberOfControlPoints()} tip markers.")
+```
+
+### Tip coordinates (PROTRUSION_MM = 4.0 mm)
+
+| Label | R (mm) | A (mm) | S (mm) | Position |
+|---|---|---|---|---|
+| F_1-1 | -18.228 | 61.228 | 53.027 | Left-Anterior tip |
+| F_1-2 |   3.117 | 61.191 | 57.467 | Center-Anterior tip |
+| F_1-3 |  24.117 | 61.167 | 53.322 | Right-Anterior tip |
+| F_2-1 | -18.264 | 46.056 | 63.126 | Left-Middle tip |
+| F_2-2 |   3.109 | 46.048 | 65.980 | Center tip |
+| F_2-3 |  24.169 | 46.024 | 62.422 | Right-Middle tip |
+| F_3-1 | -18.300 | 31.434 | 68.417 | Left-Posterior tip |
+| F_3-2 |   3.105 | 31.206 | 72.151 | Center-Posterior tip |
+| F_3-3 |  24.205 | 31.394 | 68.684 | Right-Posterior tip |
+
+### Expected result — both Markup lists visible simultaneously
+
+![Both fiducial lists — base (pink) and tip (yellow)](screenshots/04_FiducialTips_BothLists.png)
+
+**Colour legend:**
+- 🔴 **Pink/red markers** (`FiducialMarks_List`) — screw base points on the skull surface
+- 🟡 **Yellow/gold markers** (`FiducialTips_List`) — screw tip points 4mm above skull surface
+
+In the 3D rendering (top-right) each pair of markers is visible side by side for every screw. In the 2D slice views the yellow tip markers appear slightly outside the skull ring, confirming correct protrusion. The sagittal view (bottom-right) shows the vertical offset between base and tip clearly along the screw shaft direction.
+
+> **For Unity registration:** use `FiducialTips_List` as the virtual point cloud. In the OR simulation, the probe tip touches the top of each physical screw — matching exactly these coordinates.
+
+---
 
 ### Option A — Export via Python (recommended)
 
