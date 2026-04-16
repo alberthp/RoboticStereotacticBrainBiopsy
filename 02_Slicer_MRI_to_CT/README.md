@@ -120,21 +120,46 @@ For clearer bone visualisation, set **Window = 400, Level = 200**. The skull cor
 
 > ⚠️ **This step is required.** The ModalityConverter preprocessing pads the MRI to 256×256×256 voxels, shifting the CT anatomy upward by ~100mm in S relative to the MRI. Without correction, fiducial markers and segmentations will not align correctly.
 
+### Why the offset occurs
+
+The FedSynthCT preprocessing pads shorter volumes asymmetrically — extra slices are added **superiorly only** (never into the neck), shifting the anatomical content upward:
+
+```
+MRI input  : 112 slices   S = -77.7 to +79.1 mm
+CT output  : 256 slices   S = -77.7 to +280.7 mm  (+144 slices above)
+Anatomy shift: ~100mm upward in S
+Additional : ~6mm (N4ITK bias field correction sub-voxel shift)
+```
+
+### Registration method — Hybrid coarse-to-fine
+
+The alignment script uses a two-stage hybrid approach:
+
+**Stage 1 — Intensity centroid heuristic (coarse)**
+Computes the centre of mass of bright voxels in the MRI (tissue threshold > 300) and bone voxels in the CT (HU threshold > 200 HU), then calculates the S-axis offset between them. This robustly handles the large ~100mm initial offset in a few seconds.
+
+**Stage 2 — Mattes Mutual Information registration (fine)**
+Uses SimpleITK's `ImageRegistrationMethod` with Mattes Mutual Information metric — the standard approach for multi-modal MRI↔CT registration. Starting from the coarse estimate (so the large initial offset is already corrected), it optimises translation in R, A and S simultaneously using a Regular Step Gradient Descent optimiser with a multi-resolution pyramid (2x → 1x). This refines the residual sub-millimetre misalignment in all three axes.
+
 ### Run the interactive alignment script
 
 Open the Python Interactor (`View → Python Interactor`) and paste the contents of:
 
 **`scripts/align_CT_to_MRI.py`**
 
-The script guides you through 5 steps with GUI dialogs:
+A **non-modal floating panel** opens — Slicer views remain fully interactive throughout.
 
-| Step | Action |
+![CT ↔ MRI Alignment Tool GUI](images/03_AlignmentTool_GUI.png)
+
+| Panel step | Action |
 |---|---|
-| 1 | Enter MRI and CT volume names — validated against scene, lists available options if wrong |
-| 2 | Automatic S-axis offset computed from bone/tissue centroids |
-| 3 | MRI/CT overlay set up for visual verification (50% blend) |
-| 4 | Interactive fine-tuning loop — adjust R, A, S until aligned |
-| 5 | Harden transform permanently into CT volume, renamed to `CTBrain_Aligned` |
+| **Step 1** | Select MRI and CT volumes from dropdowns (auto-populated from scene) |
+| **Step 2** | Click **Run Registration** — spinner shows progress, Slicer stays interactive |
+| **Step 3** | Drag opacity slider (CT only ↔ MRI only) to verify skull ring overlap in all 3 views |
+| **Step 4** | Optional spinboxes for manual fine-tune in R, A, S if residual offset remains |
+| **Step 5** | Click **Confirm & Harden** to permanently bake the correction into the CT volume |
+
+The **Cancel / Remove Transform** button (red) is available after registration to undo the alignment and return the CT to its original position — no scene restart needed.
 
 ### What correct alignment looks like
 
@@ -143,16 +168,7 @@ When aligned, in all 3 slice views:
 - The **fiducial markers** sit on the bone surface
 - The **screw shafts** are visible at the correct position in the sagittal view
 
-### Why the offset occurs
-
-The FedSynthCT preprocessing pads shorter volumes asymmetrically — extra slices are added **superiorly only**, shifting the anatomical content upward:
-
-```
-MRI input  : 112 slices   S = -77.7 to +79.1 mm
-CT output  : 256 slices   S = -77.7 to +280.7 mm  (+144 slices above)
-Anatomy shift: ~100mm upward in S
-Fine-tune  : +6mm additional (N4ITK bias correction sub-voxel shift)
-```
+After hardening, the CT is renamed to `CTBrain_Aligned` and its S range corrects to approximately `-179 to +179 mm`, matching the MRI coverage.
 
 ---
 
