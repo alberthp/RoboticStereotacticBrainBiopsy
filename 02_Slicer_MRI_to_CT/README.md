@@ -1,6 +1,6 @@
-# 01 — MRI to Synthetic CT Conversion
+# 02 — MRI to Synthetic CT Conversion
 
-Converts T1-weighted MRI brain scans to synthetic CT (sCT) using the **FedSynthCT-Brain** federated learning model, integrated in the **SlicerModalityConverter** extension. The synthetic CT provides Hounsfield Unit (HU) values needed for bone segmentation and radiotherapy dose planning — tasks where MRI alone is insufficient.
+Converts T1-weighted MRI brain scans to synthetic CT (sCT) using the **FedSynthCT-Brain** federated learning model, integrated in the **SlicerModalityConverter** extension. The synthetic CT provides Hounsfield Unit (HU) values needed for bone segmentation — tasks where MRI alone is insufficient.
 
 ---
 
@@ -22,11 +22,13 @@ MRI provides excellent soft tissue contrast but cannot reliably distinguish bone
 
 ---
 
-## Step 2 — Load Sample Data
+## Step 2 — Load the MRI with Screws
 
-1. Go to **File → Download Sample Data**
-2. Click **MRBrainTumor1** — the volume loads automatically
-3. Verify it appears in the slice views as a T1-weighted MRI brain scan
+1. Go to **File → Load Scene**
+2. Load `01_Slicer_FiducialScrews/data/01_MRBrainTumor1_MRI_Screws_FiducialMarkers.mrb`
+3. Verify `MRBrainTumorWithScrews` appears in the Data panel
+
+> Or load your own MRI volume if you followed module 01 manually.
 
 ---
 
@@ -44,10 +46,10 @@ Set the following parameters (see screenshot below):
 
 | Parameter | Value | Notes |
 |---|---|---|
-| **Input volume** | `MRBrainTumor1` | The T1w MRI loaded in Step 2 |
+| **Input volume** | `MRBrainTumorWithScrews` | The MRI with simulated screws |
 | **ROI Mask** | `None` | Leave empty — do not use a mask |
 | **Model** | `[T1w MRI-to-CT] [Brain] FedSynthCT MRI-T1w Fu Model` | See model selection below |
-| **Output volume** | `MRBrainTumor1_CT_FuModel` | Name the output clearly |
+| **Output volume** | `CTBrain_NotAligned` | Name clearly — it will be renamed after alignment |
 | **Device** | `gpu 0 - NVIDIA GeForce ...` | Use GPU if available — significantly faster |
 
 ![ModalityConverter configuration](modalityconverter_config.png)
@@ -66,15 +68,13 @@ Three brain MRI-to-CT models are available, all trained using the FedSynthCT-Bra
 
 **Use the Fu Model** — among the three it produces the most accurate synthetic CT with the best bone contrast and fewest artefacts on the MRBrainTumor1 dataset. This is critical for the downstream skull segmentation step.
 
-> All three models were trained using the same federated learning framework across 4 European and American centres. The difference is in the U-Net backbone architecture used for image-to-image translation.
-
 ---
 
 ## Step 5 — Run the Conversion
 
 1. Click **Run**
 2. The status bar shows `Processing completed.` when done (30–120 seconds depending on GPU/CPU)
-3. The output volume `MRBrainTumor1_CT_FuModel` appears in the Data module
+3. The output volume appears in the Data panel
 
 ---
 
@@ -84,7 +84,7 @@ Switch to the CT volume and set a bone window to confirm the skull is clearly vi
 
 ```python
 # Run in Python Interactor (View → Python Interactor)
-ctNode = slicer.util.getNode("MRBrainTumor1_CT_FuModel")
+ctNode = slicer.util.getNode("CTBrain_NotAligned")
 slicer.util.setSliceViewerLayers(background=ctNode, fit=True)
 displayNode = ctNode.GetVolumeDisplayNode()
 displayNode.SetWindow(1500)
@@ -92,21 +92,7 @@ displayNode.SetLevel(400)
 print(f"CT range: {ctNode.GetImageData().GetScalarRange()}")
 ```
 
-## Step 6 — Verify the Output
-
-Switch to the CT volume and set a bone window to confirm the skull is clearly visible:
-
-```python
-# Run in Python Interactor (View → Python Interactor)
-ctNode = slicer.util.getNode("MRBrainTumor1_CT_FuModel")
-slicer.util.setSliceViewerLayers(background=ctNode, fit=True)
-displayNode = ctNode.GetVolumeDisplayNode()
-displayNode.SetWindow(1500)
-displayNode.SetLevel(400)
-print(f"CT range: {ctNode.GetImageData().GetScalarRange()}")
-```
-
-Expected output: CT range approximately `-1024` to `1600` HU. Bone should appear bright white in the axial view.
+Expected output: CT range approximately `-1024` to `1600` HU. Bone should appear bright white.
 
 ### Expected result
 
@@ -114,14 +100,12 @@ Expected output: CT range approximately `-1024` to `1600` HU. Bone should appear
 
 The synthetic CT clearly shows:
 - **Axial (top-left)** — bright white skull ring with the 9 screw signals visible as high-intensity spots
-- **3D rendering (top-right)** — fiducial marker labels (F_1-1 through F_3-3) overlaid on the skull surface
-- **Coronal (bottom-left)** and **Sagittal (bottom-right)** — clean bone contrast with soft tissue visible
-
-The screws burned into the MRI in module 01 are preserved and visible in the synthetic CT — confirming the full pipeline is working correctly.
+- **3D rendering (top-right)** — fiducial marker labels overlaid on the skull surface
+- **Coronal and Sagittal** — clean bone contrast with soft tissue visible
 
 ### Bone window — high contrast view
 
-For clearer bone visualisation, narrow the window to emphasise the cortical ring:
+For clearer bone visualisation, narrow the window:
 
 ```python
 displayNode.SetWindow(400)
@@ -130,7 +114,63 @@ displayNode.SetLevel(200)
 
 ![Synthetic CT — bone window](screenshots/02_CT_BoneWindow.png)
 
-With this window setting the skull cortex appears pure white and the soft tissue disappears, making it ideal for segmentation (module 03). The 3D rendering (top-right) shows the skull surface geometry clearly.
+---
+
+## Step 7 — Align CT to MRI
+
+> ⚠️ **This step is required.** The ModalityConverter preprocessing pads the MRI to 256×256×256 voxels, shifting the CT anatomy upward by ~100mm in S relative to the MRI. Without correction, fiducial markers and segmentations will not align correctly.
+
+### Run the interactive alignment script
+
+Open the Python Interactor (`View → Python Interactor`) and paste the contents of:
+
+**`scripts/align_CT_to_MRI.py`**
+
+The script guides you through 5 steps with GUI dialogs:
+
+| Step | Action |
+|---|---|
+| 1 | Enter MRI and CT volume names (validated against scene) |
+| 2 | Automatic S-axis offset computed from bone centroids |
+| 3 | MRI/CT overlay set up for visual verification |
+| 4 | Interactive fine-tuning loop — adjust R, A, S until aligned |
+| 5 | Harden transform permanently into CT volume |
+
+### What correct alignment looks like
+
+When aligned, in all 3 slice views:
+- The **CT skull ring** (bright white) overlaps the **MRI skull ring** (grey)
+- The **fiducial markers** sit on the bone surface
+- The **screw shafts** are visible at the correct position in sagittal view
+
+### Why the offset occurs
+
+The FedSynthCT preprocessing pads shorter volumes asymmetrically — extra slices are added **superiorly only** (never into the neck), shifting the anatomical content upward:
+
+```
+MRI input  : 112 slices   S = -77.7 to +79.1 mm
+CT output  : 256 slices   S = -77.7 to +280.7 mm  (+144 slices above)
+Anatomy shift: ~100mm upward in S
+Fine-tune  : +6mm additional (N4ITK bias correction sub-voxel shift)
+```
+
+The alignment script corrects this automatically. See the **Known Issue** section below for full technical details.
+
+### After hardening
+
+The CT volume is renamed to `CTBrain_Aligned` and its origin is permanently corrected. Verify the final S range:
+
+```python
+import vtk
+ctNode  = slicer.util.getNode("CTBrain_Aligned")
+ijkToRAS = vtk.vtkMatrix4x4()
+ctNode.GetIJKToRASMatrix(ijkToRAS)
+dims    = ctNode.GetImageData().GetDimensions()
+corner0 = ijkToRAS.MultiplyPoint([0, 0, 0, 1])
+cornerN = ijkToRAS.MultiplyPoint([dims[0], dims[1], dims[2], 1])
+print(f"CT  S range: {round(corner0[2],1)} to {round(cornerN[2],1)} mm")
+print(f"MRI S range: -77.7 to +79.1 mm")
+```
 
 ---
 
@@ -138,62 +178,40 @@ With this window setting the skull cortex appears pure white and the soft tissue
 
 | Node | Type | Description |
 |---|---|---|
-| `MRBrainTumor1_CT_FuModel` | Scalar Volume | Synthetic CT [256×256×256] in Hounsfield Units |
+| `CTBrain_Aligned` | Scalar Volume | Synthetic CT [256×256×256], aligned to MRI |
 
-This volume is used as input for **[02 — Segmentation](../03_Slicer_Segmentation/README.md)**.
+This volume is the input for **[03 — Segmentation](../03_Slicer_Segmentation/README.md)**.
 
 ---
 
 ## Known Issue — Vertical Misalignment in 3D Rendering
 
-When both `MRBrainTumor1` (original MRI) and the synthetic CT are displayed simultaneously in the 3D view, a **vertical offset of ~100mm** is visible between the two volumes. The CT skull appears shifted upward relative to the MRI head rendering.
-
-**This is expected behaviour — not a bug.**
+When both the MRI and CT are displayed simultaneously in the 3D view before alignment, a **vertical offset of ~100mm** is visible. This is expected — see Step 7 above for the fix.
 
 ### Root cause
 
-The FedSynthCT preprocessing standardises all input volumes to a uniform size of 256×256×256 voxels through cropping, resizing, and padding. MRBrainTumor1 has only **112 slices**, so the preprocessor must add **144 extra slices** to reach 256. These are added **superiorly** (upward in the S direction) — the standard convention for brain imaging, since padding should never extend into the neck or chest.
-
-```
-MRBrainTumor1 (input):   112 slices   S = -77.7 to +79.1 mm
-                                            ↓ padding: +144 slices above
-Synthetic CT (output):   256 slices   S = -77.7 to +280.7 mm
-                                       ↑ same origin, extended upward
-```
-
-| Property | MRI | Synthetic CT |
+| Property | MRI | Synthetic CT (before alignment) |
 |---|---|---|
 | S range | -77.7 to **+79.1 mm** | -77.7 to **+280.7 mm** |
 | Slices | 112 | 256 |
 | Volume centre (S) | 0.7 mm | **101.5 mm** |
-| Extra coverage | — | +201.6 mm above MRI |
 
-The origin is **identical** for both volumes (-77.7 mm) — so the same S coordinate maps to the same anatomy in both. The misalignment is only visible in 3D because the **bounding boxes have different heights**, shifting the 3D render centre upward by ~101 mm.
+The origin is **identical** for both volumes but the bounding box centres differ by ~101mm, causing the 3D render shift. The 2D slice views are unaffected because they navigate by S coordinate, not bounding box centre.
 
-### Why 2D views are not affected
-
-In 2D slice views you navigate by S coordinate. Since both volumes share the same origin and spacing, S = 60mm shows the same brain slice in both — the extra padding slices are simply empty (zero) above the brain and never visible during normal navigation.
-
-### Impact on the pipeline
-
-None. All RAS coordinates, segmentation, fiducial placement, and registration use slice positions which are correctly aligned. The 3D rendering discrepancy is purely cosmetic.
-
-### Workaround — crop the CT rendering to match MRI coverage
+### Workaround for 3D rendering only (cosmetic)
 
 ```python
-# Restrict CT 3D rendering to the MRI S range
-ctNode  = slicer.util.getNode("BrainTumor1_Screws_CTFu")
+# Crop CT 3D rendering to MRI S coverage
+ctNode  = slicer.util.getNode("CTBrain_Aligned")
 vrLogic = slicer.modules.volumerendering.logic()
 vrNode  = vrLogic.GetFirstVolumeRenderingDisplayNode(ctNode)
 if vrNode:
     roiNode = vrNode.GetROINode()
-    roiNode.SetXYZ(0, 0, 0.7)           # MRI centre in S
-    roiNode.SetRadiusXYZ(120, 120, 78)  # MRI half-extents
+    roiNode.SetXYZ(0, 0, 0.7)
+    roiNode.SetRadiusXYZ(120, 120, 78)
     vrNode.SetCroppingEnabled(True)
     print("CT rendering cropped to MRI coverage.")
 ```
-
-The output CT has dimensions 256×256×256 regardless of the input MRI dimensions. For MRBrainTumor1 (112 slices), the CT covers a larger S range (up to +280mm) than the original MRI (up to +79mm). This is important when working with coordinates across both volumes — see module 03 for details.
 
 ---
 
@@ -203,18 +221,12 @@ A complete Slicer scene bundle for this module is available in the repository:
 
 **`02_Slicer_MRI_to_CT/data/03_MBRBrainTumor1_MRI_CT_Screws.mrb`**
 
-### Contents
-
 | Node | Type | Description |
 |---|---|---|
-| `MRBrainTumor1` | Volume | Original T1w MRI |
-| `MRBrainTumor1_1` | Volume | MRI with 9 simulated bone-anchored screws |
-| `BrainTumor1_Screws_CTFu` | Volume | Synthetic CT generated from MRI with screws (Fu Model) |
-| `FiducialMarks_List` | Markups | 9 ground truth screw centroid coordinates |
-| `MaskedInputVolume` | Volume | Preprocessing intermediate |
-| `PreprocessedInputVolume` | Volume | Preprocessing intermediate |
-
-### How to open
+| `MRBrainTumorWithScrews` | Volume | MRI with 9 simulated screws |
+| `CTBrain_Aligned` | Volume | Synthetic CT aligned to MRI (Fu Model) |
+| `FiducialMarks_List` | Markups | 9 screw base coordinates |
+| `FiducialTips_List` | Markups | 9 screw tip coordinates (4mm protrusion) |
 
 ```
 File → Load Scene → 02_Slicer_MRI_to_CT/data/03_MBRBrainTumor1_MRI_CT_Screws.mrb
@@ -229,5 +241,5 @@ This bundle is the starting point for **[03 — Segmentation](../03_Slicer_Segme
 > C.B. Raggio et al., *FedSynthCT-Brain: A federated learning framework for multi-institutional brain MRI-to-CT synthesis*, Computers in Biology and Medicine, Volume 192, Part A, 2025, 110160.
 > https://doi.org/10.1016/j.compbiomed.2025.110160
 
-> Raggio C.B., Zaffino P., Spadea M.F., *SlicerModalityConverter: An Open-Source 3D Slicer Extension for Medical Image-to-Image Translation*, 2025.
+> Raggio C.B., Zaffino P., Spadea M.F., *SlicerModalityConverter*, 2025.
 > https://github.com/ciroraggio/SlicerModalityConverter
