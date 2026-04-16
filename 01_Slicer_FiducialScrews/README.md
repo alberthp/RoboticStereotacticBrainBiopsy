@@ -108,7 +108,7 @@ print(f"Loaded {node.GetNumberOfControlPoints()} points.")
 3. Click **MRBrainTumor1** to download and load the T1-weighted MRI
 4. Verify the volume appears in the slice views as shown below
 
-![MRBrainTumor1 original](screenshots/01_MRBrainTumor1_original.png)
+![MRBrainTumor1 original](images/01_MRBrainTumor1_original.png)
 
 The axial view (top-left) shows the brain with the tumour visible as a bright region. The coronal (bottom-left) and sagittal (bottom-right) views confirm the tumour location. The 3D volume rendering (top-right) shows the full head.
 
@@ -360,7 +360,7 @@ print(f"Max value: {mriArray.max():.1f}")
 
 ### Expected result
 
-![MRI with screws burned in](screenshots/02_MRI_WithScrews.png)
+![MRI with screws burned in](images/02_MRI_WithScrews.png)
 
 The bright white signals on the skull surface are the simulated screws. Verify in all four views:
 
@@ -391,7 +391,7 @@ print("Fiducial list updated to screw centroids.")
 
 ### Expected result
 
-![Fiducial marks and screws](screenshots/03_FiducialMarks_and_Screws.png)
+![Fiducial marks and screws](images/03_FiducialMarks_and_Screws.png)
 
 The Markups panel (left) shows all 9 points in the `FiducialMarks_List` with their R, A, S coordinates. The pink/red spheres in the slice views and 3D rendering are the Markup centroids, overlaid exactly on the bright white screw signals. This confirms the fiducial coordinates are correctly aligned with the burned voxel cylinders:
 
@@ -493,7 +493,7 @@ print(f"\nCreated {tipsNode.GetNumberOfControlPoints()} tip markers.")
 
 ### Expected result — both Markup lists visible simultaneously
 
-![Both fiducial lists — base (pink) and tip (yellow)](screenshots/04_FiducialTips_BothLists.png)
+![Both fiducial lists — base (pink) and tip (yellow)](images/04_FiducialTips_BothLists.png)
 
 **Colour legend:**
 - 🔴 **Pink/red markers** (`FiducialMarks_List`) — screw base points on the skull surface
@@ -648,13 +648,13 @@ Anyone who downloads the `.mrb` file can open it in Slicer with a single click a
 
 2. The dialog lists all individual files in the scene (NRRD volumes, markups JSON, volume properties):
 
-   ![Save Scene dialog — MRML format](screenshots/04_SaveScene_MRML.png)
+   ![Save Scene dialog — MRML format](images/04_SaveScene_MRML.png)
 
 3. Click the **File Format dropdown** of the first row (`SlicerScene_Final.mrml`) and change it from `MRML Scene (.mrml)` to **`Medical Reality Bundle (.mrb)`**
 
 4. All individual files collapse into a single row — the bundle packages everything automatically:
 
-   ![Save Scene dialog — MRB format](screenshots/05_SaveScene_MRB.png)
+   ![Save Scene dialog — MRB format](images/05_SaveScene_MRB.png)
 
 5. Click the **directory button (...)** to set the save location — navigate to your repo folder `01_Slicer_FiducialScrews/data/`
 
