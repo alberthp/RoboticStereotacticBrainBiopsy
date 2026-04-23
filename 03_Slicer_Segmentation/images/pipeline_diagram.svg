@@ -1,0 +1,93 @@
+<svg width="680" height="630" viewBox="0 0 680 630" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>Screw fiducial marker generator — pipeline diagram</title>
+<desc>Six-step vertical flowchart: CT/MRI input, manual segmentation, automated component identification with artifact detection, automated PCA fiducial computation, manual fine-tuning, and output markup nodes.</desc>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#888780" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    text { font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+    .th  { font-size: 14px; font-weight: 500; }
+    .ts  { font-size: 12px; font-weight: 400; }
+    .bg-gray   { fill: #F1EFE8; stroke: #888780;  stroke-width: 0.5; }
+    .bg-coral  { fill: #FAECE7; stroke: #993C1D;  stroke-width: 0.5; }
+    .bg-teal   { fill: #E1F5EE; stroke: #0F6E56;  stroke-width: 0.5; }
+    .bg-purple { fill: #EEEDFE; stroke: #534AB7;  stroke-width: 0.5; }
+    .t-gray    { fill: #2C2C2A; }
+    .t-coral   { fill: #711B0C; }
+    .t-teal    { fill: #085041; }
+    .t-purple  { fill: #3C3489; }
+    .bd-coral  { fill: none; stroke: #D85A30; stroke-width: 0.8; }
+    .bd-teal   { fill: none; stroke: #1D9E75; stroke-width: 0.8; }
+    .bt-coral  { fill: #993C1D; font-size: 11px; }
+    .bt-teal   { fill: #0F6E56; font-size: 11px; }
+    .sw-coral  { fill: #FAECE7; stroke: #993C1D; stroke-width: 1; }
+    .sw-teal   { fill: #E1F5EE; stroke: #0F6E56; stroke-width: 1; }
+    .sw-purple { fill: #EEEDFE; stroke: #534AB7; stroke-width: 1; }
+    .leg       { font-size: 12px; fill: #5F5E5A; }
+    .env       { font-size: 11px; fill: #B4B2A9; }
+    .arr       { stroke: #B4B2A9; stroke-width: 1; fill: none; }
+    .div       { stroke: #D3D1C7; stroke-width: 0.5; }
+    .ctr       { fill: none; stroke: #D3D1C7; stroke-width: 0.5; stroke-dasharray: 4 4; }
+  </style>
+</defs>
+
+<rect x="120" y="22" width="440" height="548" rx="14" class="ctr"/>
+<text class="env" x="140" y="38">3D Slicer environment</text>
+
+<!-- Box 1: Input -->
+<rect x="140" y="46" width="400" height="44" rx="8" class="bg-gray"/>
+<text class="th t-gray" x="340" y="68" text-anchor="middle" dominant-baseline="central">Input — CT/MRI with implanted screws</text>
+
+<line x1="340" y1="90" x2="340" y2="118" class="arr" marker-end="url(#ar)"/>
+
+<!-- Box 2: Step 1 -->
+<rect x="140" y="120" width="400" height="64" rx="8" class="bg-coral"/>
+<text class="th t-coral" x="340" y="144" text-anchor="middle" dominant-baseline="central">Step 1 — segment editor</text>
+<text class="ts t-coral" x="340" y="166" text-anchor="middle" dominant-baseline="central">All screws into one segment</text>
+<rect x="470" y="128" width="62" height="20" rx="10" class="bd-coral"/>
+<text class="bt-coral" x="501" y="138" text-anchor="middle" dominant-baseline="central">manual</text>
+
+<line x1="340" y1="184" x2="340" y2="212" class="arr" marker-end="url(#ar)"/>
+
+<!-- Box 3: Step 2 -->
+<rect x="140" y="214" width="400" height="64" rx="8" class="bg-teal"/>
+<text class="th t-teal" x="340" y="238" text-anchor="middle" dominant-baseline="central">Step 2 — identify volumes</text>
+<text class="ts t-teal" x="340" y="260" text-anchor="middle" dominant-baseline="central">Component labels · artifact detection</text>
+<rect x="484" y="222" width="48" height="20" rx="10" class="bd-teal"/>
+<text class="bt-teal" x="508" y="232" text-anchor="middle" dominant-baseline="central">auto</text>
+
+<line x1="340" y1="278" x2="340" y2="306" class="arr" marker-end="url(#ar)"/>
+
+<!-- Box 4: Step 3 -->
+<rect x="140" y="308" width="400" height="64" rx="8" class="bg-teal"/>
+<text class="th t-teal" x="340" y="332" text-anchor="middle" dominant-baseline="central">Step 3 — compute fiducials</text>
+<text class="ts t-teal" x="340" y="354" text-anchor="middle" dominant-baseline="central">PCA long axis · centroid · tip per screw</text>
+<rect x="484" y="316" width="48" height="20" rx="10" class="bd-teal"/>
+<text class="bt-teal" x="508" y="326" text-anchor="middle" dominant-baseline="central">auto</text>
+
+<line x1="340" y1="372" x2="340" y2="400" class="arr" marker-end="url(#ar)"/>
+
+<!-- Box 5: Step 4 -->
+<rect x="140" y="402" width="400" height="64" rx="8" class="bg-coral"/>
+<text class="th t-coral" x="340" y="426" text-anchor="middle" dominant-baseline="central">Step 4 — fine-tune tips</text>
+<text class="ts t-coral" x="340" y="448" text-anchor="middle" dominant-baseline="central">Move tips ± mm along R, A, S · reset option</text>
+<rect x="470" y="410" width="62" height="20" rx="10" class="bd-coral"/>
+<text class="bt-coral" x="501" y="420" text-anchor="middle" dominant-baseline="central">manual</text>
+
+<line x1="340" y1="466" x2="340" y2="494" class="arr" marker-end="url(#ar)"/>
+
+<!-- Box 6: Output -->
+<rect x="140" y="496" width="400" height="60" rx="8" class="bg-purple"/>
+<text class="th t-purple" x="340" y="516" text-anchor="middle" dominant-baseline="central">Output — markup nodes in scene</text>
+<text class="ts t-purple" x="340" y="538" text-anchor="middle" dominant-baseline="central">ScrewTips · ScrewCentroids · ScrewAxes/</text>
+
+<!-- Legend -->
+<line x1="50" y1="578" x2="630" y2="578" class="div"/>
+<rect x="68"  y="589" width="13" height="13" rx="3" class="sw-coral"/>
+<text class="leg" x="86"  y="596" dominant-baseline="central">Manual step</text>
+<rect x="210" y="589" width="13" height="13" rx="3" class="sw-teal"/>
+<text class="leg" x="228" y="596" dominant-baseline="central">Automated step</text>
+<rect x="374" y="589" width="13" height="13" rx="3" class="sw-purple"/>
+<text class="leg" x="392" y="596" dominant-baseline="central">Output nodes</text>
+</svg>
