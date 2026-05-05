@@ -223,3 +223,15 @@ File → Load Scene → 02_Slicer_MRI_to_CT/data/03_MBRBrainTumor1_MRI_CT_Screws
 
 > Raggio C.B., Zaffino P., Spadea M.F., *SlicerModalityConverter*, 2025.
 > https://github.com/ciroraggio/SlicerModalityConverter
+
+---
+
+## Author
+
+**Albert Hernansanz Prats**
+
+*albert.hernansanz@upf.edu · alberthp@gmail.com*
+
+SYMBIOsis | Barcelona Centre for New Medical Technologies (BCN MedTech)
+Department of Information and Communication Technologies
+Universitat Pompeu Fabra (UPF)
