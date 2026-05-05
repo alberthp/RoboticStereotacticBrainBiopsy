@@ -259,7 +259,17 @@ For the MRI-to-CT conversion component:
 > https://doi.org/10.1016/j.compbiomed.2025.110160
 
 ---
+## Author
 
+**Albert Hernansanz Prats**
+
+*albert.hernansanz@upf.edu · alberthp@gmail.com*
+
+SYMBIOsis | Barcelona Centre for New Medical Technologies (BCN MedTech)
+Department of Information and Communication Technologies
+Universitat Pompeu Fabra (UPF)
+
+---
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
