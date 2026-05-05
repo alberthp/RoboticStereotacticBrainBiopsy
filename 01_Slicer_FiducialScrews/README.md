@@ -679,3 +679,15 @@ If using the ModalityConverter (FedSynthCT) model in this workflow:
 
 SlicerModalityConverter extension: https://github.com/ciroraggio/SlicerModalityConverter
 
+---
+
+## Author
+
+**Albert Hernansanz Prats**
+
+*albert.hernansanz@upf.edu · alberthp@gmail.com*
+
+SYMBIOsis | Barcelona Centre for New Medical Technologies (BCN MedTech)
+Department of Information and Communication Technologies
+Universitat Pompeu Fabra (UPF)
+
