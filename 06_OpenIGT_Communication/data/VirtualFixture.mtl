@@ -1,0 +1,8 @@
+# Material for VirtualFixture
+newmtl VirtualFixture
+Ka 0.2000 1.0000 0.4000
+Kd 0.2000 1.0000 0.4000
+Ks 0.2000 0.2000 0.2000
+Ns 20.0000
+d 1.0000
+illum 2
