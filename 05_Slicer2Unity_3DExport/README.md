@@ -118,7 +118,7 @@ These files import directly into Unity and align correctly when placed under a s
 
    The final result in Unity's 3D view — cranium (yellow), virtual fixture corridor (green, double-sided), screw fiducials, and tumour, all aligned under a single parent transform:
 
-   ![Anatomy imported in Unity](images/unity_anatomy.png)
+   ![Anatomy imported in Unity](images/Unity_Anatomy.png)
 
 ---
 
