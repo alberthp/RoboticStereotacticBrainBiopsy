@@ -16,7 +16,28 @@ virtual fixture.
 
 *The BiopsyTool OpenIGT Bridge panel as it appears inside Slicer (left-hand Modules area). The four collapsible sections cover the full runtime workflow: loading the calibrated tool model, starting the OpenIGTLink server, monitoring the live tool pose, and visualising the collision state. See [GUI overview](#gui-overview) below for a per-section walkthrough.*
 
-### About OpenIGTLink
+## Table of Contents
+
+1. [About OpenIGTLink](#about-openigtlink)
+2. [GUI overview](#gui-overview)
+3. [Architecture](#architecture)
+4. [Repository Layout](#repository-layout)
+5. [Prerequisites](#prerequisites)
+6. [Installing the Slicer extension](#installing-the-slicer-extension)
+   - [Quick path: drop-in Python script](#quick-path-drop-in-python-script)
+   - [Full extension: load via Slicer](#full-extension-load-via-slicer)
+   - [Packaged distribution (.s4ext)](#packaged-distribution-s4ext)
+7. [Setup, step by step](#setup-step-by-step)
+8. [Coordinate systems and calibration](#coordinate-systems-and-calibration)
+9. [OpenIGTLink message reference](#openigtlink-message-reference)
+10. [Collision detection](#collision-detection)
+11. [Troubleshooting](#troubleshooting)
+12. [Appendix: Manual setup without the extension](#appendix-manual-setup-without-the-extension)
+13. [Credits and educational context](#credits-and-educational-context)
+
+---
+
+## About OpenIGTLink
 
 **OpenIGTLink** (Open Image-Guided Therapy Link) is a lightweight,
 open-source network protocol designed for real-time communication
@@ -96,26 +117,6 @@ that model red on COLLISION and restores its original colour on
 FREE. If it doesn't, the status label still updates but no model
 recolouring happens — the module never crashes when the scene lacks
 a VirtualFixture.
-
----
-
-## Table of Contents
-
-1. [About OpenIGTLink](#about-openigtlink)
-2. [GUI overview](#gui-overview)
-3. [Architecture](#architecture)
-4. [Repository Layout](#repository-layout)
-5. [Prerequisites](#prerequisites)
-6. [Installing the Slicer extension](#installing-the-slicer-extension)
-   - [Quick path: drop-in Python script](#quick-path-drop-in-python-script)
-   - [Full extension: load via Slicer](#full-extension-load-via-slicer)
-   - [Packaged distribution (.s4ext)](#packaged-distribution-s4ext)
-7. [Setup, step by step](#setup-step-by-step)
-8. [Coordinate systems and calibration](#coordinate-systems-and-calibration)
-9. [OpenIGTLink message reference](#openigtlink-message-reference)
-10. [Collision detection](#collision-detection)
-11. [Troubleshooting](#troubleshooting)
-12. [Appendix: Manual setup without the extension](#appendix-manual-setup-without-the-extension)
 
 ---
 

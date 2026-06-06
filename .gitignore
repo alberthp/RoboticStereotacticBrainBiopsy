@@ -1,4 +1,6 @@
-# Unity
+# ──────────────────────────────────────────────────────────
+# Unity intermediates
+# ──────────────────────────────────────────────────────────
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -10,10 +12,11 @@
 *.sln
 *.csproj
 *.unityproj
-.DS_Store
 *.meta
 
+# ──────────────────────────────────────────────────────────
 # Slicer large data files (store separately or via releases)
+# ──────────────────────────────────────────────────────────
 *.nrrd
 *.nii
 *.nii.gz
@@ -21,19 +24,41 @@
 # Allow .mrb scene bundles explicitly committed to data/ folders
 !**/data/*.mrb
 
-# Patient data (never commit)
+# ──────────────────────────────────────────────────────────
+# Patient data (NEVER commit)
+# ──────────────────────────────────────────────────────────
 *.dcm
 DICOM/
 
+# ──────────────────────────────────────────────────────────
 # Python
+# ──────────────────────────────────────────────────────────
 __pycache__/
 *.pyc
 *.pyo
 
-# OS
+# ──────────────────────────────────────────────────────────
+# Slicer / CMake build artifacts
+# (generated when CMake is run on the extension folder;
+# never needed in the repo because the extension loads
+# directly from sources)
+# ──────────────────────────────────────────────────────────
+*-build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.s4ext.in.tmp
+
+# ──────────────────────────────────────────────────────────
+# Operating system
+# ──────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Editor
+# ──────────────────────────────────────────────────────────
+# Editor / IDE configuration
+# ──────────────────────────────────────────────────────────
 .vscode/
 .idea/
+*.swp
